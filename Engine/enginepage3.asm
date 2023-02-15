@@ -884,7 +884,7 @@ copyGraphicsToScreen:
   
 	ld		hl,$4000
   ld    c,$98
-  ld    a,64 ; 42                ;second 84 line, copy 64*256 = $4000 bytes to Vram
+  ld    a,42                ;second 84 line, copy 64*256 = $4000 bytes to Vram
   ld    b,0
       
   call  .loop1   
@@ -1294,6 +1294,8 @@ LogoAnimationVar2:            rb    1
 LogoAnimationVar3:            rb    1
 
 scrollcounter:                rb    1
+worldpaletteA:                rb    2
+worldpaletteB:                rb    2
 
 
 

@@ -3,29 +3,10 @@ TeamNXTLogoRoutine:
 
 ;  ld    hl,CleanPage2
 ;  call  DoCopy
+  call  LoadWorld1
   
-  ld    d,World1Page0GraphicsBlock
-  ld    hl,$0000                  ;page 0 - screen 5
-  ld    b,0
-  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
-
-  ld    d,World1Page1GraphicsBlock
-  ld    hl,$8000                  ;page 1 - screen 5
-  ld    b,0
-  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
-
-  ld    d,World1Page2GraphicsBlock
-  ld    hl,$0000                  ;page 2 - screen 5
-  ld    b,1
-  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
-
-  ld    d,World1Page3GraphicsBlock
-  ld    hl,$8000                  ;page 3 - screen 5
-  ld    b,1
-  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
-
-  ld    a,0*32+31
-  call  setpage                   ;in a->x*32+31 (x=page)
+;  ld    a,0*32+31
+;  call  setpage                   ;in a->x*32+31 (x=page)
     
   .loop:
   halt
@@ -75,7 +56,7 @@ TeamNXTLogoRoutine:
   jp    z,.step14
 
 .step15:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
@@ -87,7 +68,7 @@ TeamNXTLogoRoutine:
   ret
 
 .step13:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
@@ -99,7 +80,7 @@ TeamNXTLogoRoutine:
   ret
 
 .step11:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
@@ -111,12 +92,12 @@ TeamNXTLogoRoutine:
   ret
 
 .step9:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
 .step8:
-  ld    hl,World1bPalette
+  ld    hl,(worldpaletteB)
   call  setpalette
   xor   a
   call  setR23
@@ -125,7 +106,7 @@ TeamNXTLogoRoutine:
   ret
 
 .step7:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
@@ -137,7 +118,7 @@ TeamNXTLogoRoutine:
   ret
 
 .step5:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
@@ -149,7 +130,7 @@ TeamNXTLogoRoutine:
   ret
 
 .step3:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
@@ -161,12 +142,12 @@ TeamNXTLogoRoutine:
   ret
 
 .step1:
-  ld    a,97
+  ld    a,106
   call  setR23
   ret
 
 .step0:
-  ld    hl,World1aPalette
+  ld    hl,(worldpaletteA)
   call  setpalette
   xor   a
   call  setR23
@@ -186,6 +167,64 @@ World1aPalette:
   incbin "..\grapx\world1\world1a.pl" ;file palette 
 World1bPalette:
   incbin "..\grapx\world1\world1b.pl" ;file palette 
+World2aPalette:
+  incbin "..\grapx\world2\world2a.pl" ;file palette 
+World2bPalette:
+  incbin "..\grapx\world2\world2b.pl" ;file palette 
+
+LoadWorld1:  
+  ld    d,World1Page0GraphicsBlock
+  ld    hl,$0000                  ;page 0 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World1Page1GraphicsBlock
+  ld    hl,$8000                  ;page 1 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World1Page2GraphicsBlock
+  ld    hl,$0000                  ;page 2 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World1Page3GraphicsBlock
+  ld    hl,$8000                  ;page 3 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    hl,World1aPalette
+  ld    (worldpaletteA),hl
+  ld    hl,World1bPalette
+  ld    (worldpaletteB),hl
+  ret
+
+LoadWorld2:  
+  ld    d,World2Page0GraphicsBlock
+  ld    hl,$0000                  ;page 0 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World2Page1GraphicsBlock
+  ld    hl,$8000                  ;page 1 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World2Page2GraphicsBlock
+  ld    hl,$0000                  ;page 2 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World2Page3GraphicsBlock
+  ld    hl,$8000                  ;page 3 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    hl,World2aPalette
+  ld    (worldpaletteA),hl
+  ld    hl,World2bPalette
+  ld    (worldpaletteB),hl
+  ret
 
 
 LogoAnimationPhase6:              ;6 = fade out frame
