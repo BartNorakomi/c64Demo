@@ -3429,7 +3429,7 @@ dephase
 ;
 ; block $50 - $51
 ;
-World1Page0GraphicsBlock:  equ   $50
+world1Page0GraphicsBlock:  equ   $50
 phase	$4000
   incbin "..\grapx\world1\world1Page0.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
@@ -3438,7 +3438,7 @@ dephase
 ;
 ; block $52 - $53
 ;
-World1Page1GraphicsBlock:  equ   $52
+world1Page1GraphicsBlock:  equ   $52
 phase	$4000
   incbin "..\grapx\world1\world1Page1.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
@@ -3447,7 +3447,7 @@ dephase
 ;
 ; block $54 - $55
 ;
-World1Page2GraphicsBlock:  equ   $54
+world1Page2GraphicsBlock:  equ   $54
 phase	$4000
   incbin "..\grapx\world1\world1Page2.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
@@ -3456,7 +3456,7 @@ dephase
 ;
 ; block $56 - $57
 ;
-World1Page3GraphicsBlock:  equ   $56
+world1Page3GraphicsBlock:  equ   $56
 phase	$4000
   incbin "..\grapx\world1\world1Page3.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
@@ -3951,7 +3951,7 @@ dephase
 ;
 ; block $6b - $6c
 ;
-World2Page0GraphicsBlock:  equ   $6b
+world2Page0GraphicsBlock:  equ   $6b
 phase	$4000
   incbin "..\grapx\world2\world2Page0.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
@@ -3960,7 +3960,7 @@ dephase
 ;
 ; block $6d - $6e
 ;
-World2Page1GraphicsBlock:  equ   $6d
+world2Page1GraphicsBlock:  equ   $6d
 phase	$4000
   incbin "..\grapx\world2\world2Page1.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
@@ -3969,7 +3969,7 @@ dephase
 ;
 ; block $6f - $70
 ;
-World2Page2GraphicsBlock:  equ   $6f
+world2Page2GraphicsBlock:  equ   $6f
 phase	$4000
   incbin "..\grapx\world2\world2Page2.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
@@ -3978,15 +3978,65 @@ dephase
 ;
 ; block $71 - $72
 ;
-World2Page3GraphicsBlock:  equ   $71
+world2Page3GraphicsBlock:  equ   $71
 phase	$4000
   incbin "..\grapx\world2\world2Page3.SC5",7,212 * 128      ;194 lines
 	ds		$c000-$,$ff
 dephase
 
 
-; block $73 - $86
-  ds  $4000 * $14
+
+
+
+
+
+;
+; block $73 - $74
+;
+world3Page0GraphicsBlock:  equ   $73
+phase	$4000
+  incbin "..\grapx\world3\world3Page0.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+;
+; block $75 - $76
+;
+world3Page1GraphicsBlock:  equ   $75
+phase	$4000
+  incbin "..\grapx\world3\world3Page1.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+;
+; block $77 - $78
+;
+world3Page2GraphicsBlock:  equ   $77
+phase	$4000
+  incbin "..\grapx\world3\world3Page2.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+;
+; block $79 - $7a
+;
+world3Page3GraphicsBlock:  equ   $79
+phase	$4000
+  incbin "..\grapx\world3\world3Page3.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+
+
+
+
+
+
+
+
+
+; block $7a - $86
+  ds  $4000 * $c
 
 
 

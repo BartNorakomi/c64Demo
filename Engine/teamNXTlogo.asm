@@ -1,9 +1,13 @@
 TeamNXTLogoRoutine:
+
+  call  SetInterruptHandlerC64Demo
+
+WorldLoader:
 ;  call  ScreenOff
 
 ;  ld    hl,CleanPage2
 ;  call  DoCopy
-  call  LoadWorld1
+  call  LoadWorld
   
 ;  ld    a,0*32+31
 ;  call  setpage                   ;in a->x*32+31 (x=page)
@@ -14,11 +18,21 @@ TeamNXTLogoRoutine:
   ld    a,(framecounter)
   inc   a
   ld    (framecounter),a
-  jp    .loop
+  
+  call  PopulateControls
+;
+; bit	7	6	  5		    4		    3		    2		  1		  0
+;		  0	0	  trig-b	trig-a	right	  left	down	up	(joystick)
+;		  0	F1	'M'		  space	  right	  left	down	up	(keyboard)
+;
+  ld    a,(NewPrContr)	
+  bit   4,a               ;check  if space is pressed
+  jr    z,.loop
+  jp    WorldLoader
 
 .HandlePhase:
   ld    a,(framecounter)
-  and   7
+  and   15
   ret   nz
 
   ld    a,(scrollcounter)
@@ -155,6 +169,78 @@ TeamNXTLogoRoutine:
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
+lineintheightC64Demo: equ 106
+SetInterruptHandlerC64Demo:
+  di
+  ld    hl,InterruptHandlerC64Demo
+  ld    ($38+1),hl          ;set new normal interrupt
+  ld    a,$c3               ;jump command
+  ld    ($38),a
+ 
+  ld    a,(VDP_0)           ;set ei1
+  or    16                  ;ei1 checks for lineint and vblankint
+  ld    (VDP_0),a           ;ei0 (which is default at boot) only checks vblankint
+  out   ($99),a
+  ld    a,128
+  out   ($99),a
+
+  ld    a,lineintheightC64Demo
+  out   ($99),a
+  ld    a,19+128            ;set lineinterrupt height
+  ei
+  out   ($99),a 
+  ret
+
+InterruptHandlerC64Demo:
+  push  af
+  
+  ld    a,1                 ;set s#1
+  out   ($99),a
+  ld    a,15+128
+  out   ($99),a
+  in    a,($99)             ;check and acknowledge line interrupt
+  rrca
+  jp    c,lineintC64Demo    ;ScoreboardSplit/BorderMaskingSplit
+  
+  xor   a                   ;set s#0
+  out   ($99),a
+  ld    a,15+128
+  out   ($99),a
+  in    a,($99)             ;check and acknowledge vblank interrupt
+  rlca
+  jp    c,vblankC64Demo     ;vblank detected, so jp to that routine
+ 
+  pop   af 
+  ei
+  ret
+
+;we set horizontal and vertical screen adjust
+;we set status register 0
+vblankC64Demo:
+;  xor   a
+;  out   ($99),a
+;  ld    a,23+128
+;  out   ($99),a
+
+  pop   af 
+  ei
+  ret
+  
+lineintC64Demo:
+;  ld    a,lineintheightC64Demo    ;set vertical screen adjust
+;  out   ($99),a
+;  ld    a,23+128
+;  out   ($99),a
+
+  xor   a                 ;set s#0
+  out   ($99),a
+  ld    a,15+128
+  out   ($99),a
+
+  pop   af 
+  ei
+  ret  
+
 setR23:
   di
   out   ($99),a
@@ -171,6 +257,25 @@ World2aPalette:
   incbin "..\grapx\world2\world2a.pl" ;file palette 
 World2bPalette:
   incbin "..\grapx\world2\world2b.pl" ;file palette 
+World3aPalette:
+  incbin "..\grapx\world3\world3a.pl" ;file palette 
+World3bPalette:
+  incbin "..\grapx\world3\world3b.pl" ;file palette 
+
+LoadWorld:  
+  ld    a,(CurrentWorld)
+  inc   a
+  and   3
+  ld    (CurrentWorld),a
+  jp    z,LoadWorld1
+  dec   a
+  jp    z,LoadWorld2
+  dec   a
+  jp    z,LoadWorld3
+  dec   a
+  jp    z,LoadWorld3
+  ret
+
 
 LoadWorld1:  
   ld    d,World1Page0GraphicsBlock
@@ -226,6 +331,32 @@ LoadWorld2:
   ld    (worldpaletteB),hl
   ret
 
+LoadWorld3:  
+  ld    d,World3Page0GraphicsBlock
+  ld    hl,$0000                  ;page 0 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World3Page1GraphicsBlock
+  ld    hl,$8000                  ;page 1 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World3Page2GraphicsBlock
+  ld    hl,$0000                  ;page 2 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World3Page3GraphicsBlock
+  ld    hl,$8000                  ;page 3 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    hl,World3aPalette
+  ld    (worldpaletteA),hl
+  ld    hl,World3bPalette
+  ld    (worldpaletteB),hl
+  ret
 
 LogoAnimationPhase6:              ;6 = fade out frame
   ld    a,(LogoAnimationVar3)

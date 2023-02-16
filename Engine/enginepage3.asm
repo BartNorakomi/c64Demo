@@ -1297,6 +1297,8 @@ scrollcounter:                rb    1
 worldpaletteA:                rb    2
 worldpaletteB:                rb    2
 
+CurrentWorld:                 rb    1
+
 
 
 
