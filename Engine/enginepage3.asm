@@ -1280,7 +1280,10 @@ scrollEngine:                 rb    1
 PageOnNextVblank:             rb    1
 R18onVblank:                  rb    1
 R23onVblank:                  rb    1
+R23onLineint:                 rb    1
 R19onVblank:                  rb    1
+
+scrollspeed:                  rb    1
 
 DoubleJumpAvailable?:         rb    1
 PlayerDead?:                  rb    1

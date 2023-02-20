@@ -2,6 +2,9 @@ TeamNXTLogoRoutine:
 
   call  SetInterruptHandlerC64Demo
 
+  ld    a,3
+  ld    (scrollspeed),a
+
 WorldLoader:
 ;  call  ScreenOff
 
@@ -13,13 +16,20 @@ WorldLoader:
 ;  call  setpage                   ;in a->x*32+31 (x=page)
     
   .loop:
-  halt
+  xor   a
+  ld    hl,vblankintflag
+.checkflag:
+  cp    (hl)
+  jr    z,.checkflag
+  ld    (hl),a  
+
   call  .HandlePhase
   ld    a,(framecounter)
   inc   a
   ld    (framecounter),a
   
   call  PopulateControls
+  call  HandleScrollSpeed
 ;
 ; bit	7	6	  5		    4		    3		    2		  1		  0
 ;		  0	0	  trig-b	trig-a	right	  left	down	up	(joystick)
@@ -31,14 +41,40 @@ WorldLoader:
   jp    WorldLoader
 
 .HandlePhase:
-  ld    a,(framecounter)
-  and   15
-  ret   nz
+  ld    a,(scrollspeed)
+  or    a
+  ld    b,0
+  jr    z,.ScrollSpeedSet
+  dec   a
+  ld    b,1
+  jr    z,.ScrollSpeedSet
+  dec   a
+  ld    b,3
+  jr    z,.ScrollSpeedSet
+  dec   a
+  ld    b,7
+  jr    z,.ScrollSpeedSet
+  dec   a
+  ld    b,15
+  jr    z,.ScrollSpeedSet
+  ld    b,31
 
+  .ScrollSpeedSet:
+  ld    a,(framecounter)
+  and   b
+  jr    z,.IncreaseScrollCounter
+
+  ld    a,(scrollcounter)
+  or    a
+  jp    .CheckStep
+
+  .IncreaseScrollCounter:
   ld    a,(scrollcounter)
   inc   a
   and   15
   ld    (scrollcounter),a
+  .CheckStep:
+   
   jp    z,.step0
   dec   a
   jp    z,.step1
@@ -69,104 +105,271 @@ WorldLoader:
   dec   a
   jp    z,.step14
 
+
+
+
+
+
 .step15:
-  ld    a,106
-  call  setR23
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteB)
+  call  setpalette
+
+  ld    a,3*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step14:
-  xor   a
-  call  setR23
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteB)
+  call  setpalette
+
   ld    a,3*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step13:
-  ld    a,106
-  call  setR23
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteB)
+  call  setpalette
+
+  ld    a,2*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step12:
-  xor   a
-  call  setR23
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteB)
+  call  setpalette
+
   ld    a,2*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step11:
-  ld    a,106
-  call  setR23
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteB)
+  call  setpalette
+
+  ld    a,1*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step10:
-  xor   a
-  call  setR23
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteB)
+  call  setpalette
+
   ld    a,1*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step9:
-  ld    a,106
-  call  setR23
-  ret
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
 
-.step8:
   ld    hl,(worldpaletteB)
   call  setpalette
-  xor   a
-  call  setR23
+
   ld    a,0*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
+.step8:
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteB)
+  call  setpalette
+
+  ld    a,0*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
+  ret
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .step7:
-  ld    a,106
-  call  setR23
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteA)
+  call  setpalette
+
+  ld    a,3*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step6:
-  xor   a
-  call  setR23
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteA)
+  call  setpalette
+
   ld    a,3*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step5:
-  ld    a,106
-  call  setR23
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteA)
+  call  setpalette
+
+  ld    a,2*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step4:
-  xor   a
-  call  setR23
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteA)
+  call  setpalette
+
   ld    a,2*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step3:
-  ld    a,106
-  call  setR23
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteA)
+  call  setpalette
+
+  ld    a,1*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step2:
-  xor   a
-  call  setR23
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteA)
+  call  setpalette
+
   ld    a,1*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step1:
-  ld    a,106
-  call  setR23
+  ld    a,lineintheightC64Demo    ;r#23 set on vblank
+  ld    b,lineintheightC64Demo+lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,+lineintheightC64Demo-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
+  ld    hl,(worldpaletteA)
+  call  setpalette
+
+  ld    a,0*32+31
+  call  setpage                   ;in a->x*32+31 (x=page)
   ret
 
 .step0:
+  xor   a                         ;r#23 set on vblank
+  ld    b,lineintheightC64Demo-2    ;r#19 set on vblank
+  ld    c,-lineintheightC64Demo   ;lineintheightC64Demo+00 ;r#23 set on lineint
+  call  setR19and23onVblankAndLineint
+
   ld    hl,(worldpaletteA)
   call  setpalette
-  xor   a
-  call  setR23
+
   ld    a,0*32+31
   call  setpage                   ;in a->x*32+31 (x=page)
+  ret
+
+
+
+
+
+
+HandleScrollSpeed:
+  ld    a,(framecounter)
+  and   31
+  ret   nz
+
+;
+; bit	7	6	  5		    4		    3		    2		  1		  0
+;		  0	0	  trig-b	trig-a	right	  left	down	up	(joystick)
+;		  0	F1	'M'		  space	  right	  left	down	up	(keyboard)
+;
+  ld    a,(Controls)
+  bit   2,a               ;check  if left is pressed
+  jr    nz,.left
+  bit   3,a               ;check  if right is pressed
+  jr    nz,.right
+  ret
+
+  .left:
+  ld    a,(scrollspeed)
+  cp    5
+  ret   z
+  inc   a
+  ld    (scrollspeed),a
+  ret
+
+  .right:
+  ld    a,(scrollspeed)
+  or    a
+  ret   z
+  dec   a
+  ld    (scrollspeed),a
   ret
 
 lineintheightC64Demo: equ 106
@@ -217,36 +420,56 @@ InterruptHandlerC64Demo:
 ;we set horizontal and vertical screen adjust
 ;we set status register 0
 vblankC64Demo:
-;  xor   a
-;  out   ($99),a
-;  ld    a,23+128
-;  out   ($99),a
+  ld    a,1
+  ld    (vblankintflag),a
 
   pop   af 
   ei
   ret
   
 lineintC64Demo:
-;  ld    a,lineintheightC64Demo    ;set vertical screen adjust
-;  out   ($99),a
-;  ld    a,23+128
-;  out   ($99),a
+  push  bc
+  push  de
+
+  ld    c,$99
+  ld    a,(R23onLineint)
+  ld    d,a
+  ld    e,23+128
+ 
+nop |nop |nop |nop |nop |nop 
+
+  out   (c),d             ;set r#23 at the start of Hblank period
+  out   (c),e
 
   xor   a                 ;set s#0
   out   ($99),a
   ld    a,15+128
   out   ($99),a
-
+  
+  pop   de 
+  pop   bc
   pop   af 
   ei
   ret  
 
-setR23:
+setR19and23onVblankAndLineint:    ;in a=r#23 set on vblank, b=r#19 set on vblank, c=r#23 set on lineint
+;  xor   a                         ;r#23 set on vblank
+;  ld    b,lineintheightC64Demo+00 ;r#19 set on vblank
+;  ld    c,lineintheightC64Demo+00 ;r#23 set on lineint
+
   di
-  out   ($99),a
+  out   ($99),a    
   ld    a,23+128
+  out   ($99),a
+
+  ld    a,b                         ;splitline height relative to r#23
+  out   ($99),a
+  ld    a,19+128
   ei
   out   ($99),a  
+  
+  ld    a,c
+  ld    (R23onLineint),a
   ret
 
 World1aPalette:
@@ -267,11 +490,11 @@ LoadWorld:
   inc   a
   and   3
   ld    (CurrentWorld),a
+  jp    z,LoadWorld4
+  dec   a
   jp    z,LoadWorld1
   dec   a
   jp    z,LoadWorld2
-  dec   a
-  jp    z,LoadWorld3
   dec   a
   jp    z,LoadWorld3
   ret
@@ -332,6 +555,33 @@ LoadWorld2:
   ret
 
 LoadWorld3:  
+  ld    d,World3Page0GraphicsBlock
+  ld    hl,$0000                  ;page 0 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World3Page1GraphicsBlock
+  ld    hl,$8000                  ;page 1 - screen 5
+  ld    b,0
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World3Page2GraphicsBlock
+  ld    hl,$0000                  ;page 2 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    d,World3Page3GraphicsBlock
+  ld    hl,$8000                  ;page 3 - screen 5
+  ld    b,1
+  call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
+
+  ld    hl,World3aPalette
+  ld    (worldpaletteA),hl
+  ld    hl,World3bPalette
+  ld    (worldpaletteB),hl
+  ret
+
+LoadWorld4:  
   ld    d,World3Page0GraphicsBlock
   ld    hl,$0000                  ;page 0 - screen 5
   ld    b,0
