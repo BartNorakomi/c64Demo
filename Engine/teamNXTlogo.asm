@@ -484,6 +484,10 @@ World3aPalette:
   incbin "..\grapx\world3\world3a.pl" ;file palette 
 World3bPalette:
   incbin "..\grapx\world3\world3b.pl" ;file palette 
+World4aPalette:
+  incbin "..\grapx\world4\world4a.pl" ;file palette 
+World4bPalette:
+  incbin "..\grapx\world4\world4b.pl" ;file palette 
 
 LoadWorld:  
   ld    a,(CurrentWorld)
@@ -582,29 +586,29 @@ LoadWorld3:
   ret
 
 LoadWorld4:  
-  ld    d,World3Page0GraphicsBlock
+  ld    d,World4Page0GraphicsBlock
   ld    hl,$0000                  ;page 0 - screen 5
   ld    b,0
   call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
 
-  ld    d,World3Page1GraphicsBlock
+  ld    d,World4Page1GraphicsBlock
   ld    hl,$8000                  ;page 1 - screen 5
   ld    b,0
   call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
 
-  ld    d,World3Page2GraphicsBlock
+  ld    d,World4Page2GraphicsBlock
   ld    hl,$0000                  ;page 2 - screen 5
   ld    b,1
   call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
 
-  ld    d,World3Page3GraphicsBlock
+  ld    d,World4Page3GraphicsBlock
   ld    hl,$8000                  ;page 3 - screen 5
   ld    b,1
   call  copyGraphicsToScreen      ;copies $8000 bytes (256x256) to screen
 
-  ld    hl,World3aPalette
+  ld    hl,World4aPalette
   ld    (worldpaletteA),hl
-  ld    hl,World3bPalette
+  ld    hl,World4bPalette
   ld    (worldpaletteB),hl
   ret
 

@@ -4031,12 +4031,51 @@ dephase
 
 
 
+;
+; block $7b - $7c
+;
+world4Page0GraphicsBlock:  equ   $7b
+phase	$4000
+  incbin "..\grapx\world4\world4Page0.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+;
+; block $7d - $7e
+;
+world4Page1GraphicsBlock:  equ   $7d
+phase	$4000
+  incbin "..\grapx\world4\world4Page1.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+;
+; block $7f - $80
+;
+world4Page2GraphicsBlock:  equ   $7f
+phase	$4000
+  incbin "..\grapx\world4\world4Page2.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+;
+; block $81 - $82
+;
+world4Page3GraphicsBlock:  equ   $81
+phase	$4000
+  incbin "..\grapx\world4\world4Page3.SC5",7,212 * 128      ;194 lines
+	ds		$c000-$,$ff
+dephase
+
+
+
+
 
 
 
 
 ; block $7a - $86
-  ds  $4000 * $c
+  ds  $4000 * 4
 
 
 
