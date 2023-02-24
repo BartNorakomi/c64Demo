@@ -61,7 +61,7 @@ WorldLoader:
 
   .ScrollSpeedSet:
   ld    a,(framecounter)
-  and   b
+  and   7
   jr    z,.IncreaseScrollCounter
 
   ld    a,(scrollcounter)
