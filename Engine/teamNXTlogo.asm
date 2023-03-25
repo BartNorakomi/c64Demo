@@ -2,7 +2,7 @@ TeamNXTLogoRoutine:
 
   call  SetInterruptHandlerC64Demo
 
-  ld    a,3
+  ld    a,2
   ld    (scrollspeed),a
 
 WorldLoader:
@@ -23,13 +23,15 @@ WorldLoader:
   jr    z,.checkflag
   ld    (hl),a  
 
-  call  .HandlePhase
+  call  HandlePhase
   ld    a,(framecounter)
   inc   a
   ld    (framecounter),a
   
   call  PopulateControls
   call  HandleScrollSpeed
+  call  PutSprites
+  
 ;
 ; bit	7	6	  5		    4		    3		    2		  1		  0
 ;		  0	0	  trig-b	trig-a	right	  left	down	up	(joystick)
@@ -40,7 +42,199 @@ WorldLoader:
   jr    z,.loop
   jp    WorldLoader
 
-.HandlePhase:
+PutSprites:
+  call  SetSpriteTables         ;color table $17400, att table to $17600, chr table to $17800
+  call  PutPlayerSprites         ;character and color data for the sprites
+  call  PutSpatToVram2             ;outs all spat data to Vram
+  ret
+
+
+
+
+
+
+PutPlayerSprites:
+  ld    hl,$7800                ;character table $17800
+	ld		a,1
+	call	SetVdp_Write
+
+	ld		hl,Preycharacterdata  ;sprite character in ROM
+	ld		c,$98         ;port to write to, and replace the nop wait time instruction required      
+	call	outix96    ;3 sprites (3 * 32 = 96 bytes)
+
+	ld		hl,Huntercharacterdata  ;sprite character in ROM
+	ld		c,$98         ;port to write to, and replace the nop wait time instruction required      
+	call	outix96    ;3 sprites (3 * 32 = 96 bytes)
+
+  ld    hl,$7400                ;color table $17400
+	ld		a,1
+	call	SetVdp_Write
+
+  ld    a,(scrollcounter)
+  cp    8
+	ld		hl,Preycolordata1  ;sprite color data
+  jr    c,.SetColorData
+	ld		hl,Preycolordata2  ;sprite color data  
+  .SetColorData:
+	ld		c,$98         ;port to write to, and replace the nop wait time instruction required      
+	call	outix48     ;3 sprites (3 * 16 bytes = 48 bytes)
+
+	ld		hl,Huntercolordata  ;sprite color data
+	ld		c,$98         ;port to write to, and replace the nop wait time instruction required      
+	call	outix48     ;3 sprites (3 * 16 bytes = 48 bytes)
+  ret
+
+colordarkgrey:   equ 1
+colormidgrey:   equ 2
+colorblack:   equ 12
+
+colorgreen2:   equ 5
+colorgreen3:   equ 6
+colorgreen1:   equ 8
+
+colorblue2:   equ 9
+colorblue3:   equ 10
+colorblue1:   equ 4
+
+Huntercharacterdata:           incbin "..\sprites\sprconv FOR SINGLE SPRITES MAYBE\hunter.spr",0,32*3 * 12
+Huntercolordata:           ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+                        ds 16,colordarkgrey | ds 16,colormidgrey+64 | ds 16,colorblack+64 
+
+Preycharacterdata:           incbin "..\sprites\sprconv FOR SINGLE SPRITES MAYBE\prey.spr",0,32*3 ;* 12
+Preycolordata1:           ds 16,colorgreen2 | ds 16,colorgreen3+64 | ds 16,colorgreen1+64 
+Preycolordata2:           ds 16,colorblue2 | ds 16,colorblue3+64 | ds 16,colorblue1+64 
+
+
+PutSpatToVram2:
+	ld		hl,$7600                 ;sprite attribute table in VRAM ($17600)
+	ld		a,1
+	call	SetVdp_Write	
+
+  ld    a,(scrollcounter)
+  rrca
+  ld    d,0
+  jr    nc,.LineIntHeightFound
+  ld    d,lineintheightC64Demo
+  .LineIntHeightFound:
+  
+	ld		hl,spat			;sprite attribute table, and replace the nop required wait time
+  ld    c,$98
+  
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+
+
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+
+
+  ret
+
+SetSpriteTables:
+;SwapSpatColAndCharTable:
+;	ld		a,(vdp_0+6)     ;check current sprite character table
+;  cp    %0010 1111      ;spr chr table at $17800 now ?
+;  ld    hl,$6c00        ;spr color table $16c00
+;  ld    de,$7400        ;spr color table buffer $17400
+;	ld		a,%1101 1111    ;spr att table to $16e00    
+;	ld		b,%0010 1110    ;spr chr table to $17000
+;  jp    z,.setspritetables
+;  ld    hl,$7400        ;spr color table $17400
+;  ld    de,$6c00        ;spr color table buffer $16c00
+	ld		a,%1110 1111    ;spr att table to $17600
+	ld		b,%0010 1111    ;spr chr table to $17800
+
+.setspritetables:
+	di
+	ld		(vdp_0+5),a
+	out		($99),a		;spr att table to $17600
+	ld		a,5+128
+	out		($99),a
+	ld		a,$02     ;%0000 0010
+	ld		(vdp_8+3),a
+	out		($99),a
+	ld		a,11+128
+	out		($99),a
+	
+	ld		a,b
+	ld		(vdp_0+6),a
+	out		($99),a		;spr chr table to $17800
+	ld		a,6+128
+	ei
+	out		($99),a
+ret
+
+  ld    bc,$200
+  ld    (sprcoltableaddress),hl
+  add   hl,bc
+  ld    (spratttableaddress),hl
+  add   hl,bc
+  ld    (sprchatableaddress),hl
+  ex    de,hl
+  ld    (invissprcoltableaddress),hl
+  add   hl,bc
+  ld    (invisspratttableaddress),hl
+  add   hl,bc
+  ld    (invissprchatableaddress),hl
+  ret
+
+
+
+
+
+
+
+
+
+
+
+
+  ret
+
+HandlePhase:
   ld    a,(scrollspeed)
   or    a
   ld    b,0
@@ -104,11 +298,6 @@ WorldLoader:
   jp    z,.step13
   dec   a
   jp    z,.step14
-
-
-
-
-
 
 .step15:
   ld    a,lineintheightC64Demo    ;r#23 set on vblank

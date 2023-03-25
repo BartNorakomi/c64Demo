@@ -6037,6 +6037,9 @@ ScreenOn:
   ret
 
 spat:						;sprite attribute table (y,x 32 sprites)
+	db		050,100,00,0	,050,100,04,0	,050,100,08,0	,066,100,12,0
+	db		066,100,16,0	,066,100,20,0
+	
 	ds    32*2,0
 
 PutSpatToVram:

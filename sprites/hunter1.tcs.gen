@@ -1,0 +1,17 @@
+; Sprite 0 - Mode : 1 sprite               
+  db 5
+  db 5
+  db 5
+  db 5
+  db 0
+  db 0
+  db 5
+  db 5
+  db 5
+  db 5
+  db 0
+  db 5
+  db 5
+  db 0
+  db 5
+  db 5
