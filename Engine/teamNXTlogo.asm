@@ -5,7 +5,7 @@ TeamNXTLogoRoutine:
   ld    a,2
   ld    (scrollspeed),a
 
-WorldLoader:
+  .WorldLoader:
 ;  call  ScreenOff
 
 ;  ld    hl,CleanPage2
@@ -30,7 +30,11 @@ WorldLoader:
   
   call  PopulateControls
   call  HandleScrollSpeed
-  call  PutSprites
+
+  call  SetSpriteTables         ;color table $17400, att table to $17600, chr table to $17800
+  call  PutPlayerSprites         ;character and color data for the sprites
+  call  PutSpatToVram2             ;outs all spat data to Vram
+
   
 ;
 ; bit	7	6	  5		    4		    3		    2		  1		  0
@@ -40,14 +44,148 @@ WorldLoader:
   ld    a,(NewPrContr)	
   bit   4,a               ;check  if space is pressed
   jr    z,.loop
-  jp    WorldLoader
+  jp    .WorldLoader
 
-PutSprites:
-  call  SetSpriteTables         ;color table $17400, att table to $17600, chr table to $17800
-  call  PutPlayerSprites         ;character and color data for the sprites
-  call  PutSpatToVram2             ;outs all spat data to Vram
+
+
+
+
+
+
+
+
+
+
+
+InterruptHandlerC64Demo:
+  push  af
+  
+  ld    a,1                 ;set s#1
+  out   ($99),a
+  ld    a,15+128
+  out   ($99),a
+  in    a,($99)             ;check and acknowledge line interrupt
+  rrca
+  jp    c,lineintC64Demo    ;ScoreboardSplit/BorderMaskingSplit
+  
+  xor   a                   ;set s#0
+  out   ($99),a
+  ld    a,15+128
+  out   ($99),a
+  in    a,($99)             ;check and acknowledge vblank interrupt
+  rlca
+  jp    c,vblankC64Demo     ;vblank detected, so jp to that routine
+ 
+  pop   af 
+  ei
   ret
 
+;we set horizontal and vertical screen adjust
+;we set status register 0
+vblankC64Demo:
+  ld    a,1
+  ld    (vblankintflag),a
+
+  pop   af 
+  ei
+  ret
+  
+lineintC64Demo:
+  push  bc
+  push  de
+
+  ld    c,$99
+  ld    a,(R23onLineint)
+  ld    d,a
+  ld    e,23+128
+ 
+nop |nop |nop |nop |nop |nop 
+
+  out   (c),d             ;set r#23 at the start of Hblank period
+  out   (c),e
+
+
+
+;Spat1 starts at $6e00 and is for the top part of the screen
+;Spat2 starts at $7600 and is for the bottom part of the screen
+
+;	ld		a,%1101 1111    ;spr att table to $16e00    
+	ld		a,%1110 1111    ;spr att table to $17600
+
+
+	ld		(vdp_0+5),a
+	out		($99),a		;spr att table to $17600
+	ld		a,5+128
+	out		($99),a
+	ld		a,$02     ;%0000 0010
+	ld		(vdp_8+3),a
+	out		($99),a
+	ld		a,11+128
+	out		($99),a
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  xor   a                 ;set s#0
+  out   ($99),a
+  ld    a,15+128
+  out   ($99),a
+  
+  pop   de 
+  pop   bc
+  pop   af 
+  ei
+  ret  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+setR19and23onVblankAndLineint:    ;in a=r#23 set on vblank, b=r#19 set on vblank, c=r#23 set on lineint
+;  xor   a                         ;r#23 set on vblank
+;  ld    b,lineintheightC64Demo+00 ;r#19 set on vblank
+;  ld    c,lineintheightC64Demo+00 ;r#23 set on lineint
+
+  di
+  out   ($99),a    
+  ld    a,23+128
+  out   ($99),a
+
+  ld    a,b                         ;splitline height relative to r#23
+  out   ($99),a
+  ld    a,19+128
+  ei
+  out   ($99),a  
+  
+  ld    a,c
+  ld    (R23onLineint),a
+  ret
 
 
 
@@ -67,6 +205,10 @@ PutPlayerSprites:
 	call	outix96    ;3 sprites (3 * 32 = 96 bytes)
 
   ld    hl,$7400                ;color table $17400
+  call  .WriteSpritecolor
+  ld    hl,$6c00        ;spr color table $16c00
+
+  .WriteSpritecolor:
 	ld		a,1
 	call	SetVdp_Write
 
@@ -116,16 +258,29 @@ Preycolordata2:           ds 16,colorblue2 | ds 16,colorblue3+64 | ds 16,colorbl
 
 
 PutSpatToVram2:
-	ld		hl,$7600                 ;sprite attribute table in VRAM ($17600)
+  ld    a,(spat)      ;y sprites
+  inc   a
+  ld    (spat+0),a      ;y sprites
+  ld    (spat+4),a      ;y sprites
+  ld    (spat+8),a      ;y sprites
+  add   a,16
+  ld    (spat+12),a      ;y sprites
+  ld    (spat+16),a      ;y sprites
+  ld    (spat+20),a      ;y sprites
+
+
+
+;Spat1 starts at $6e00 and is for the top part of the screen
+	ld		hl,$6e00                 ;sprite attribute table in VRAM ($17600)
 	ld		a,1
 	call	SetVdp_Write	
 
   ld    a,(scrollcounter)
   rrca
   ld    d,0
-  jr    nc,.LineIntHeightFound
+  jr    nc,.LineIntHeightFound1
   ld    d,lineintheightC64Demo
-  .LineIntHeightFound:
+  .LineIntHeightFound1:
   
 	ld		hl,spat			;sprite attribute table, and replace the nop required wait time
   ld    c,$98
@@ -148,8 +303,61 @@ PutSpatToVram2:
   inc   hl
   outi  outi  outi
 
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
 
 
+
+
+
+
+;Spat2 starts at $7600 and is for the bottom part of the screen
+	ld		hl,$7600                 ;sprite attribute table in VRAM ($17600)
+	ld		a,1
+	call	SetVdp_Write	
+
+  ld    a,(scrollcounter)
+  rrca
+  ld    d,-106
+  jr    nc,.LineIntHeightFound2
+  ld    d,lineintheightC64Demo-106
+  .LineIntHeightFound2:
+  
+	ld		hl,spat			;sprite attribute table, and replace the nop required wait time
+  ld    c,$98
+  
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
+
+  ld    a,(hl)      ;y sprite
+  add   a,d         ;add lineintheight
+  out   ($98),a
+  inc   hl
+  outi  outi  outi
 
   ld    a,(hl)      ;y sprite
   add   a,d         ;add lineintheight
@@ -168,6 +376,8 @@ PutSpatToVram2:
   out   ($98),a
   inc   hl
   outi  outi  outi
+
+
 
 
 
@@ -184,7 +394,20 @@ SetSpriteTables:
 ;  jp    z,.setspritetables
 ;  ld    hl,$7400        ;spr color table $17400
 ;  ld    de,$6c00        ;spr color table buffer $16c00
-	ld		a,%1110 1111    ;spr att table to $17600
+
+
+
+
+;Spat1 starts at $6e00 and is for the top part of the screen
+;Spat2 starts at $7600 and is for the bottom part of the screen
+
+	ld		a,%1101 1111    ;spr att table to $16e00    
+;	ld		a,%1110 1111    ;spr att table to $17600
+
+
+
+
+
 	ld		b,%0010 1111    ;spr chr table to $17800
 
 .setspritetables:
@@ -221,18 +444,6 @@ ret
   ld    (invissprchatableaddress),hl
   ret
 
-
-
-
-
-
-
-
-
-
-
-
-  ret
 
 HandlePhase:
   ld    a,(scrollspeed)
@@ -583,83 +794,7 @@ SetInterruptHandlerC64Demo:
   out   ($99),a 
   ret
 
-InterruptHandlerC64Demo:
-  push  af
-  
-  ld    a,1                 ;set s#1
-  out   ($99),a
-  ld    a,15+128
-  out   ($99),a
-  in    a,($99)             ;check and acknowledge line interrupt
-  rrca
-  jp    c,lineintC64Demo    ;ScoreboardSplit/BorderMaskingSplit
-  
-  xor   a                   ;set s#0
-  out   ($99),a
-  ld    a,15+128
-  out   ($99),a
-  in    a,($99)             ;check and acknowledge vblank interrupt
-  rlca
-  jp    c,vblankC64Demo     ;vblank detected, so jp to that routine
- 
-  pop   af 
-  ei
-  ret
 
-;we set horizontal and vertical screen adjust
-;we set status register 0
-vblankC64Demo:
-  ld    a,1
-  ld    (vblankintflag),a
-
-  pop   af 
-  ei
-  ret
-  
-lineintC64Demo:
-  push  bc
-  push  de
-
-  ld    c,$99
-  ld    a,(R23onLineint)
-  ld    d,a
-  ld    e,23+128
- 
-nop |nop |nop |nop |nop |nop 
-
-  out   (c),d             ;set r#23 at the start of Hblank period
-  out   (c),e
-
-  xor   a                 ;set s#0
-  out   ($99),a
-  ld    a,15+128
-  out   ($99),a
-  
-  pop   de 
-  pop   bc
-  pop   af 
-  ei
-  ret  
-
-setR19and23onVblankAndLineint:    ;in a=r#23 set on vblank, b=r#19 set on vblank, c=r#23 set on lineint
-;  xor   a                         ;r#23 set on vblank
-;  ld    b,lineintheightC64Demo+00 ;r#19 set on vblank
-;  ld    c,lineintheightC64Demo+00 ;r#23 set on lineint
-
-  di
-  out   ($99),a    
-  ld    a,23+128
-  out   ($99),a
-
-  ld    a,b                         ;splitline height relative to r#23
-  out   ($99),a
-  ld    a,19+128
-  ei
-  out   ($99),a  
-  
-  ld    a,c
-  ld    (R23onLineint),a
-  ret
 
 World1aPalette:
   incbin "..\grapx\world1\world1a.pl" ;file palette 

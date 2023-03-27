@@ -1303,8 +1303,6 @@ worldpaletteB:                rb    2
 CurrentWorld:                 rb    1
 
 
-
-
 amountofenemies:        equ 22
 lenghtenemytable:       equ 27 + fill
 enemies_and_objects:    rb  lenghtenemytable * amountofenemies
